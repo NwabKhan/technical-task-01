@@ -1,11 +1,18 @@
-import React from 'react'
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import SubscriptionForm from "./components/SubscriptionForm";
+import Search from "./components/Search";
 
 const App = () => {
   return (
-    <div>
-      <h2 className=' text-red-600 text-2xl'>Okay</h2>
-    </div>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<SubscriptionForm />} />
+        <Route path="/search" element={<Search />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
