@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 const SubscriptionForm = () => {
+
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -17,7 +18,7 @@ const SubscriptionForm = () => {
     castings: "",
   });
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(""); //To show the success or error msg
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -30,19 +31,24 @@ const SubscriptionForm = () => {
     try {
       setLoading(true);
       setMessage("");
-      const res = await fetch("http://localhost:4000/api/models/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-        }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_BACKEND_URL}/api/models/subscribe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+          }),
+        }
+      );
+
       const data = await res.json();
       setLoading(false);
       setMessage(data.message);
 
+      // clear the form after saving data
       setFormData({
         firstname: "",
         lastname: "",
@@ -64,16 +70,24 @@ const SubscriptionForm = () => {
     }
   };
 
-  //To limit while selecting DOB
+  //To limit date while selecting DOB
   const currentDate = new Date().toISOString().split("T")[0];
+  
   return (
-    <div className="bg-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="text-right">
+        <Link
+          className="px-4 py-2 w-1/3 bg-slate-700 text-gray-50 rounded hover:opacity-80 duration-300 transition-all"
+          to="/search"
+        >
+          Search Panel
+        </Link>
+      </div>
       <div className="max-w-7xl mx-auto">
         <div>
           <h1 className="text-3xl font-semibold text-center mb-4 ">
             Subscription Form
           </h1>
-          <Link to="/search">Search</Link>
         </div>
         <form
           onSubmit={handleSubmit}
@@ -332,7 +346,7 @@ const SubscriptionForm = () => {
             <button
               disabled={loading}
               type="submit"
-              className="p-3 w-1/3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
+              className="p-3 w-1/3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-90 disabled:opacity-70 duration-300 transition-all"
             >
               {loading ? "Subscribing..." : "Subscribe"}
             </button>

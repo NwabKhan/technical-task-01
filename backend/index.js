@@ -4,7 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 import connectDB from "./config/config.js";
-import submissionRoutes from "./routes/submission.routes.js";
+import modelRoutes from "./routes/dataModel.routes.js";
 
 dotenv.config();
 
@@ -15,7 +15,9 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/models", submissionRoutes);
+// import populateDB from "./populateDB.js"; //Used to populate DB
+
+app.use("/api/models", modelRoutes);
 
 //Start the server when we have valid connection
 connectDB()
@@ -24,6 +26,7 @@ connectDB()
       app.listen(port, () => {
         console.log(`App is Running on Port http://localhost:${port}`);
       });
+      // populateDB()
     } catch (error) {
       console.log("Cannot Connect to Server");
     }

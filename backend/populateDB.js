@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
-import Form from "./models/form.model.js";
-
+import Model from "./models/dataModel.model.js";
 
 // Function to generate random data for the form fields
 const generateRandomData = () => {
@@ -30,7 +29,7 @@ const populateDB = async () => {
   console.log("Calling populateDB()")
   try {
     // Remove existing records
-    await Form.deleteMany({});
+    await Model.deleteMany({});
 
     // Generate and save 50 dummy records
     const dummyRecords = [];
@@ -38,7 +37,7 @@ const populateDB = async () => {
       const formData = generateRandomData();
       dummyRecords.push(formData);
     }
-    await Form.insertMany(dummyRecords);
+    await Model.insertMany(dummyRecords);
 
     console.log("Database populated with dummy records.");
     process.exit(0); // Exit with success

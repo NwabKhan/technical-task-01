@@ -1,12 +1,11 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import Card from "./Card";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Search() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    searchTerm: "",
     firstname: "",
     lastname: "",
     gender: "",
@@ -22,13 +21,15 @@ export default function Search() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [listings, setListings] = useState([]);
+  const [models, setModels] = useState([]);
   const [showMore, setShowMore] = useState(false);
-  //If there are some changes in the URL(query) do that in the sidebar as well
+
+  //I am changing the URL(query), on click of Search i.e handleSubmit
+  //So, if there are some changes in the URL(query), make the new fetch call and
+  //show those changes in the sidebar fields as well
   useEffect(() => {
     //So first getting all values from query
     const urlParams = new URLSearchParams(location.search);
-    const searchTermFromUrl = urlParams.get("searchTerm");
     const firstnameFromUrl = urlParams.get("firstname");
     const lastnameFromUrl = urlParams.get("lastname");
     const genderFromUrl = urlParams.get("gender");
@@ -44,7 +45,6 @@ export default function Search() {
 
     //If something is changed, set formData data to new one
     if (
-      searchTermFromUrl ||
       firstnameFromUrl ||
       lastnameFromUrl ||
       genderFromUrl ||
@@ -59,7 +59,6 @@ export default function Search() {
       castingsFromUrl
     ) {
       setFormData({
-        searchTerm: searchTermFromUrl || "",
         firstname: firstnameFromUrl || "",
         lastname: lastnameFromUrl || "",
         gender: genderFromUrl || "",
@@ -75,22 +74,32 @@ export default function Search() {
       });
     }
 
-    const fetchListings = async () => {
-      setLoading(true);
-      setShowMore(false);
-      const searchQuery = urlParams.toString();
-      const res = await fetch(`/api/models/get?${searchQuery}`);
-      const data = await res.json();
-      if (data.length > 8) {
-        setShowMore(true);
-      } else {
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
         setShowMore(false);
+        const searchQuery = urlParams.toString();
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_BASE_BACKEND_URL
+          }/api/models/search?${searchQuery}`
+        );
+        const data = await res.json();
+
+        //If there are more than 8 records, then show ShowMore btn
+        if (data.length > 8) {
+          setShowMore(true);
+        } else {
+          setShowMore(false);
+        }
+        setModels(data);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
       }
-      setListings(data);
-      setLoading(false);
     };
 
-    fetchListings();
+    fetchModels();
   }, [location.search]);
 
   const handleChange = (e) => {
@@ -98,10 +107,10 @@ export default function Search() {
     setFormData({ ...formData, [name]: value });
   };
 
+  //To do changes in the URL, and then useEffect will call
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams();
-    urlParams.set("searchTerm", formData.searchTerm);
     urlParams.set("firstname", formData.firstname);
     urlParams.set("lastname", formData.lastname);
     urlParams.set("gender", formData.gender);
@@ -119,45 +128,57 @@ export default function Search() {
   };
 
   const onShowMoreClick = async () => {
-    const numberOfListings = listings.length;
-    const startIndex = numberOfListings;
+    const numberOfModels = models.length;
+    const startIndex = numberOfModels;
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", startIndex);
     const searchQuery = urlParams.toString();
-    const res = await fetch(`/api/listing/get?${searchQuery}`);
+    const res = await fetch(
+      `${
+        import.meta.env.VITE_BASE_BACKEND_URL
+      }/api/models/search?${searchQuery}`
+    );
     const data = await res.json();
     if (data.length < 9) {
       setShowMore(false);
     }
-    setListings([...listings, ...data]);
+    setModels([...models, ...data]);
+  };
+
+  const clearFilters = () => {
+    setFormData({
+      firstname: "",
+      lastname: "",
+      gender: "",
+      dob: "",
+      profession: "",
+      shoesize: "",
+      hairColor: "",
+      hairLength: "",
+      waistSize: "",
+      height: "",
+      weight: "",
+      castings: "",
+    });
   };
 
   const currentDate = new Date().toISOString().split("T")[0];
+
   return (
     <div className="flex flex-col md:flex-row">
-      <div className="p-4 bg-slate-600 border-b-2 md:border-r-2 md:min-h-screen md:w-2/5 w-full">
+      {/* Filter Section */}
+      <div className="bg-gray-50 border-b-2 md:border-r-2 md:fixed relative md:min-h-screen md:w-[500px] w-full">
+        <button
+          className="md:absolute top-0 right-2 bg-gray-400 hover:bg-gray-500 duration-300 transition-all px-2 py-1 rounded mt-1"
+          onClick={clearFilters}
+        >
+          Clear Filters
+        </button>
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-md rounded p-8"
+          className=" bg-gray-50 px-8 py-4 shadow-md md:min-h-screen"
         >
-          <div className="grid grid-cols-1 gap-4 mb-4">
-            <div>
-              <label className="label_styles" htmlFor="firstname">
-                Search Term:
-              </label>
-              <input
-                type="text"
-                id="searchTerm"
-                name="searchTerm"
-                maxLength="62"
-                minLength="2"
-                value={formData.searchTerm}
-                onChange={handleChange}
-                className="input_styles"
-                
-                placeholder="Search"
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-4 mb-2">
             <div>
               <label className="label_styles" htmlFor="firstname">
                 First Name
@@ -171,7 +192,6 @@ export default function Search() {
                 value={formData.firstname}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter your first name"
               />
             </div>
@@ -189,31 +209,12 @@ export default function Search() {
                 value={formData.lastname}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter your last name"
-              />
-            </div>
-            <div>
-              <label className="label_styles" htmlFor="picture">
-                Picture URL (valid image URL)
-              </label>
-              <input
-                type="text"
-                id="picture"
-                name="picture"
-                pattern="https?://.*\.(png|jpg|jpeg|gif)(\?.*)?$"
-                title="Please enter a valid image URL!"
-                value={formData.picture}
-                onChange={handleChange}
-                className="input_styles"
-                
-                minLength="8"
-                placeholder="Enter picture URL"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 ">
             <div>
               <label className="label_styles" htmlFor="dob">
                 Date of Birth
@@ -227,7 +228,6 @@ export default function Search() {
                 max={currentDate}
                 min="1940-01-01"
                 className="input_styles"
-                
               />
             </div>
             <div>
@@ -240,7 +240,6 @@ export default function Search() {
                 value={formData.profession}
                 onChange={handleChange}
                 className="input_styles"
-                
               >
                 <option value="">Select Profession</option>
                 <option value="commedian">Commedian</option>
@@ -261,7 +260,6 @@ export default function Search() {
                   checked={formData.gender === "male"}
                   onChange={handleChange}
                   className="form-radio h-5 w-5 text-blue-600"
-                  
                 />
                 <span className="ml-2">Male</span>
               </label>
@@ -278,7 +276,7 @@ export default function Search() {
               </label>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             <div>
               <label className="label_styles" htmlFor="shoesize">
                 Shoe Size
@@ -292,7 +290,6 @@ export default function Search() {
                 max={50}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter shoe size"
               />
             </div>
@@ -308,7 +305,6 @@ export default function Search() {
                 value={formData.hairColor}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter hair color code"
               />
             </div>
@@ -325,7 +321,6 @@ export default function Search() {
                 max={100}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter hair length"
               />
             </div>
@@ -343,7 +338,6 @@ export default function Search() {
                 value={formData.waistSize}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter waist size"
               />
             </div>
@@ -360,7 +354,6 @@ export default function Search() {
                 value={formData.height}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter height"
               />
             </div>
@@ -377,12 +370,11 @@ export default function Search() {
                 value={formData.weight}
                 onChange={handleChange}
                 className="input_styles"
-                
                 placeholder="Enter weight"
               />
             </div>
           </div>
-          <div className=" w-4/5 mb-4">
+          <div className=" w-4/5 mb-2">
             <label className="label_styles" htmlFor="castings">
               What type of castings you will like to attend?
             </label>
@@ -405,20 +397,30 @@ export default function Search() {
             <button
               disabled={loading}
               type="submit"
-              className="p-3 w-4/5 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
+              className="p-3 w-4/5 bg-slate-700 text-white rounded-lg uppercase duration-300 transition-all hover:opacity-90 disabled:opacity-70"
             >
               {loading ? "Searching..." : "Search"}
             </button>
           </div>
         </form>
       </div>
-      <div className="flex-1">
-        <h1 className="text-3xl font-semibold border-b p-3 text-slate-700 mt-5">
-          Listing results:
-        </h1>
+
+      {/* Result section */}
+      <div className="flex-1 md:ml-[500px] ml-0 ">
+        <div className="flex justify-between items-center border-b px-4 pb-2 mb-2">
+          <h1 className="text-3xl font-semibold text-slate-700 mt-4">
+            Model results:
+          </h1>
+          <Link
+            className="bg-gray-400 hover:bg-gray-500 duration-300 transition-all px-2 py-1 rounded mt-1"
+            to="/"
+          >
+            Go Back
+          </Link>
+        </div>
         <div className="p-7 flex flex-wrap gap-4">
-          {!loading && listings.length === 0 && (
-            <p className="text-xl text-slate-700">No listing found!</p>
+          {!loading && models.length === 0 && (
+            <p className="text-xl text-slate-700">No model found!</p>
           )}
           {loading && (
             <p className="text-xl text-slate-700 text-center w-full">
@@ -426,11 +428,11 @@ export default function Search() {
             </p>
           )}
 
-          {!loading &&
-            listings &&
-            listings.map((listing) => (
-              <Card key={listing._id} listing={listing} />
-            ))}
+          <div className="flex gap-4 flex-wrap justify-center">
+            {!loading &&
+              models &&
+              models.map((model) => <Card key={model._id} model={model} />)}
+          </div>
 
           {showMore && (
             <button
