@@ -423,9 +423,9 @@ export default function Search() {
             <p className="text-xl text-slate-700">No model found!</p>
           )}
           {loading && (
-            <p className="text-xl text-slate-700 text-center w-full">
-              Loading...
-            </p>
+            <div style={{ display: "contents" }}>
+              <span class="loader"></span>
+            </div>
           )}
 
           <div className="flex gap-4 flex-wrap justify-center">

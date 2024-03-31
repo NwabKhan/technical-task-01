@@ -1,7 +1,6 @@
 import React from "react";
 
 const Card = ({ model }) => {
-  console.log("🚀 ~ Card ~ model:", model)
   const { firstname, lastname, picture, gender, dob, profession, height, weight } = model;
 
   return (
