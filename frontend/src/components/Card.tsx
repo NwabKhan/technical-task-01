@@ -1,6 +1,23 @@
 import React from "react";
 
-const Card = ({ model }) => {
+// Define the type for the model object
+interface Model {
+  firstname: string;
+  lastname: string;
+  picture: string;
+  gender: string;
+  dob: string; // Assuming dob is a string in ISO format
+  profession: string;
+  height: number;
+  weight: number;
+}
+
+// Define the props type for the Card component
+interface CardProps {
+  model: Model;
+}
+
+const Card: React.FC<CardProps> = ({ model }) => {
   const { firstname, lastname, picture, gender, dob, profession, height, weight } = model;
 
   return (

@@ -1,8 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Link } from "react-router-dom";
-const SubscriptionForm = () => {
 
-  const [formData, setFormData] = useState({
+interface FormData {
+  firstname: string;
+  lastname: string;
+  picture: string;
+  gender: string;
+  dob: string;
+  profession: string;
+  shoesize: string;
+  hairColor: string;
+  hairLength: string;
+  waistSize: string;
+  height: string;
+  weight: string;
+  castings: string;
+}
+
+const SubscriptionForm: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     firstname: "",
     lastname: "",
     picture: "",
@@ -18,15 +34,15 @@ const SubscriptionForm = () => {
     castings: "",
   });
 
-  const [message, setMessage] = useState(""); //To show the success or error msg
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string>(""); // To show the success or error message
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -48,7 +64,7 @@ const SubscriptionForm = () => {
       setLoading(false);
       setMessage(data.message);
 
-      // clear the form after saving data
+      // Clear the form after saving data
       setFormData({
         firstname: "",
         lastname: "",
@@ -64,15 +80,15 @@ const SubscriptionForm = () => {
         weight: "",
         castings: "",
       });
-    } catch (error) {
+    } catch (error:any) {
       setMessage(error.message);
       setLoading(false);
     }
   };
 
-  //To limit date while selecting DOB
+  // To limit date while selecting DOB
   const currentDate = new Date().toISOString().split("T")[0];
-  
+
   return (
     <div className="bg-gray-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="text-right">
@@ -106,8 +122,6 @@ const SubscriptionForm = () => {
                 type="text"
                 id="firstname"
                 name="firstname"
-                maxLength="62"
-                minLength="2"
                 value={formData.firstname}
                 onChange={handleChange}
                 className="input_styles"
@@ -124,8 +138,6 @@ const SubscriptionForm = () => {
                 type="text"
                 id="lastname"
                 name="lastname"
-                maxLength="62"
-                minLength="2"
                 value={formData.lastname}
                 onChange={handleChange}
                 className="input_styles"
@@ -147,7 +159,6 @@ const SubscriptionForm = () => {
                 onChange={handleChange}
                 className="input_styles"
                 required
-                minLength="8"
                 placeholder="Enter picture URL"
               />
             </div>
